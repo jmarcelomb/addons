@@ -82,7 +82,7 @@ This add-on is specifically designed to run **alongside Home Assistant's built-i
 
 #### Default Configuration (Running Alongside Home Assistant)
 
-With the default settings, you only need to configure:
+With the default settings, configure the add-on:
 ```yaml
 device: /dev/ttyUSB1  # Your second Thread radio device
 ```
@@ -90,7 +90,54 @@ device: /dev/ttyUSB1  # Your second Thread radio device
 The add-on will automatically:
 - ✅ Use wpan1 interface (avoiding Home Assistant's wpan0)
 - ✅ Run without border routing (avoiding UDP port conflicts)
-- ✅ Function as a Thread router on your existing network
+- ✅ Start the Web UI for manual network configuration
+
+**To join your existing Thread network:**
+
+1. **Get your Thread network credentials from Home Assistant:**
+   - Go to **Settings** > **Devices & Services** > **Thread**
+   - Click on your Thread network
+   - Copy the **Active dataset TLVs**
+
+2. **Extract the Network Key (Master Key) from TLVs:**
+   
+   The Active dataset TLVs contain all network credentials encoded in TLV (Type-Length-Value) format. To extract the Network Key:
+   
+   - Look for Type `05` (Network Key) with Length `10` (16 bytes)
+   - Example TLV string: `...05 10 aabbccddeeff00112233445566778899...`
+     - `05` = Type (Network Key)
+     - `10` = Length (0x10 = 16 bytes)
+     - `aabbccddeeff00112233445566778899` = Your Network Key
+   
+   **Quick extraction script:**
+   ```python
+   # Find Network Key in your dataset TLVs
+   dataset = "YOUR_DATASET_TLVS_HERE"
+   pos = dataset.find("0510")  # Find Type 05, Length 10
+   if pos != -1:
+       network_key = dataset[pos+4:pos+36]  # Extract 32 hex chars (16 bytes)
+       print(f"Network Key: {network_key}")
+   ```
+
+3. **Access the OTBR Web UI:**
+   - Navigate to `http://homeassistant.local:8090` (or your configured Web UI port)
+
+4. **Join the network using one of these methods:**
+
+   **Method A: Using Dataset TLVs (Easiest)**
+   - Click **"Join"** in the Web UI
+   - Paste your Active dataset TLVs (from step 1)
+   - Click **"Join"** to connect
+   
+   **Method B: Using Network Key (Manual)**
+   - Click **"Form"** or **"Join"** in the Web UI
+   - Enter the Network Key you extracted in step 2
+   - Configure other parameters (Channel, PAN ID, Extended PAN ID) from HA's Thread integration
+   - Click **"Form"** or **"Join"**
+
+The second OTBR instance will now join Home Assistant's Thread network as an additional router, extending your Thread coverage.
+
+> **Tip:** Method A (Dataset TLVs) is recommended as it automatically configures all network parameters correctly.
 
 #### Running as a Standalone Border Router
 
