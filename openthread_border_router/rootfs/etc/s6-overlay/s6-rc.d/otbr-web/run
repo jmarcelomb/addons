@@ -4,9 +4,31 @@
 # ==============================================================================
 # Start OpenThread BorderRouter web interface
 # ==============================================================================
-bashio::log.info "Starting otbr-web..."
+
+bashio::log.info "otbr-web service starting..."
+
+# Read the thread interface name that was selected during startup
+thread_if="wpan0"  # Default fallback
+if [ -f /tmp/otbr-thread-interface ]; then
+    thread_if=$(cat /tmp/otbr-thread-interface)
+    bashio::log.info "Using Thread interface: ${thread_if}"
+else
+    bashio::log.warning "Could not find thread interface file, using default: ${thread_if}"
+fi
+
+bashio::log.info "Starting otbr-web for interface ${thread_if}..."
 declare otbr_web_port
 
 otbr_web_port="$(bashio::addon.port 8080)"
 
-exec stdbuf -oL /usr/sbin/otbr-web -I wpan0 -d6 -s -a "::" -p "${otbr_web_port}"
+# If port is not configured, use internal port 8080
+if ! bashio::var.has_value "${otbr_web_port}"; then
+    otbr_web_port="8080"
+    bashio::log.info "Web UI will be available on internal port ${otbr_web_port}"
+else
+    bashio::log.info "Web UI will be available on port ${otbr_web_port}"
+fi
+
+bashio::log.info "Executing: /usr/sbin/otbr-web -I ${thread_if} -d6 -s -a :: -p ${otbr_web_port}"
+
+exec stdbuf -oL /usr/sbin/otbr-web -I ${thread_if} -d6 -s -a "::" -p "${otbr_web_port}"

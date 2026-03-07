@@ -26,12 +26,11 @@ fi
 # Disable OTBR Web if necessary ports are not exposed
 # ==============================================================================
 
-if bashio::var.has_value "$(bashio::addon.port 8080)" \
-     && bashio::var.has_value "$(bashio::addon.port 8081)"; then
-    bashio::log.info "Web UI and REST API port are exposed, starting otbr-web."
+if bashio::var.has_value "$(bashio::addon.port 8080)"; then
+    bashio::log.info "Web UI port is exposed, starting otbr-web."
 else
     rm /etc/s6-overlay/s6-rc.d/user/contents.d/otbr-web
-    bashio::log.info "The otbr-web is disabled."
+    bashio::log.info "The otbr-web is disabled (port 8080 not exposed)."
 fi
 
 # ==============================================================================

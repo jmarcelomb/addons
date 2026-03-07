@@ -1,10 +1,10 @@
 ---
-version: 2.16.5
-slug: openthread_border_router
-name: OpenThread Border Router
-description: OpenThread Border Router add-on
+version: 2.17.5
+slug: marcelo_openthread_border_router
+name: OpenThread Border Router (Marcelo's Multi-Instance)
+description: OpenThread Border Router add-on with multi-instance support
 url: >-
-  https://github.com/home-assistant/addons/tree/master/openthread_border_router
+  https://github.com/jmarcelomb/addons/tree/master/openthread_border_router
 arch:
   - aarch64
   - amd64
@@ -22,7 +22,6 @@ privileged:
   - NET_ADMIN
 devices:
   - /dev/net/tun
-image: homeassistant/{arch}-addon-otbr
 init: false
 options:
   device: null
@@ -32,12 +31,14 @@ options:
   firewall: true
   nat64: false
   beta: false
+  thread_interface: wpan1
+  disable_border_routing: true
 ports:
-  8080/tcp: null
+  8080/tcp: 8090
   8081/tcp: null
 ports_description:
-  8080/tcp: OpenThread Web port
-  8081/tcp: OpenThread REST API port
+  8080/tcp: OpenThread Web UI
+  8081/tcp: OpenThread REST API (auto-assigned based on interface number)
 schema:
   device: device(subsystem=tty)
   baudrate: list(57600|115200|230400|460800|921600|1000000)
@@ -48,4 +49,6 @@ schema:
   firewall: bool
   nat64: bool
   beta: bool?
+  thread_interface: match(^wpan[0-9]$)?
+  disable_border_routing: bool
 startup: services

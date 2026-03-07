@@ -71,6 +71,36 @@ App configuration:
 | nat64              | Enable NAT64 to allow Thread devices accessing IPv4 addresses |
 | network_device     | IP address and port to connect to a network-based RCP (see below) |
 | beta               | Enable beta mode with Thread 1.4 and native OpenThread mDNS |
+| thread_interface   | Thread interface name (wpan0-wpan9). **Default: wpan1** (to avoid conflict with Home Assistant's wpan0) |
+| disable_border_routing | Disable border routing to avoid conflicts. **Default: true** (recommended for multi-instance setups) |
+
+### Multi-Instance Configuration
+
+This add-on is specifically designed to run **alongside Home Assistant's built-in Thread support**. The defaults are pre-configured for this use case:
+- `thread_interface: wpan1` - Uses wpan1 instead of wpan0 (which Home Assistant uses)
+- `disable_border_routing: true` - Prevents UDP port conflicts with Home Assistant's border router
+
+#### Default Configuration (Running Alongside Home Assistant)
+
+With the default settings, you only need to configure:
+```yaml
+device: /dev/ttyUSB1  # Your second Thread radio device
+```
+
+The add-on will automatically:
+- ✅ Use wpan1 interface (avoiding Home Assistant's wpan0)
+- ✅ Run without border routing (avoiding UDP port conflicts)
+- ✅ Function as a Thread router on your existing network
+
+#### Running as a Standalone Border Router
+
+If you want to use this as your **only** border router (without Home Assistant's Thread):
+
+```yaml
+device: /dev/ttyUSB0  # Your Thread radio
+thread_interface: wpan0  # Can use wpan0 since no conflict
+disable_border_routing: false  # Enable full border router functionality
+```
 
 > [!WARNING]
 > The OTBR expects the RCP connected radio to be on a reliable link such as

@@ -1,8 +1,14 @@
 #!/bin/bash
 set -e
 
+# Read the thread interface name that was selected during startup
+thread_if="wpan0"  # Default fallback
+if [ -f /tmp/otbr-thread-interface ]; then
+    thread_if=$(cat /tmp/otbr-thread-interface)
+fi
+
 # Check if openthread socket exists
-test -S /run/openthread-wpan0.sock
+test -S "/run/openthread-${thread_if}.sock"
 
 # Check REST API port is open
 mapfile -t < /tmp/otbr-agent-rest-api

@@ -3,7 +3,43 @@
 declare thread_if
 declare otbr_forward_ingress_chain
 declare otbr_forward_egress_chain
-thread_if="wpan0"
-otbr_forward_ingress_chain="OTBR_FORWARD_INGRESS"
-otbr_forward_egress_chain="OTBR_FORWARD_EGRESS"
 
+# Function to check if OpenThread socket exists for an interface
+socket_exists() {
+  test -S "/run/openthread-$1.sock"
+}
+
+# Get configured thread interface (defaults to wpan1 in config.yaml)
+thread_if="$(bashio::config 'thread_interface')"
+
+bashio::log.info "Thread interface configured: ${thread_if}"
+
+# Check if the socket already exists (indicates interface is in use)
+if socket_exists "${thread_if}"; then
+    bashio::log.error "========================================"
+    bashio::log.error "Interface ${thread_if} is already in use!"
+    bashio::log.error "========================================"
+    bashio::log.error ""
+    bashio::log.error "Socket /run/openthread-${thread_if}.sock already exists."
+    bashio::log.error ""
+    bashio::log.error "This usually means:"
+    bashio::log.error "  • Home Assistant's built-in Thread support is using ${thread_if}"
+    bashio::log.error "  • Another OTBR add-on instance is running on ${thread_if}"
+    bashio::log.error ""
+    bashio::log.error "To fix this, set 'thread_interface' in add-on configuration to a different interface."
+    bashio::log.error "For example:"
+    bashio::log.error "  • If Home Assistant uses wpan0, use wpan1 for this add-on"
+    bashio::log.error "  • If you want multiple instances, use wpan1, wpan2, wpan3, etc."
+    bashio::log.error ""
+    exit 1
+fi
+
+bashio::log.info "Using Thread interface: ${thread_if}"
+
+# Store the interface name for other scripts to use
+echo "${thread_if}" >/tmp/otbr-thread-interface
+
+# Create unique firewall chain names based on the interface
+# This allows multiple OTBR instances to coexist with separate firewall rules
+otbr_forward_ingress_chain="OTBR_FORWARD_INGRESS_${thread_if}"
+otbr_forward_egress_chain="OTBR_FORWARD_EGRESS_${thread_if}"
