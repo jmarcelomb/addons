@@ -2,8 +2,8 @@
 version: 3.0.2
 breaking_versions: [3.0.0]
 slug: openthread_border_router
-name: OpenThread Border Router
-description: OpenThread Border Router app
+name: OpenThread Border Router (No USB - Marcelo's)
+description: OpenThread Border Router app, patched to allow network_device without a USB device
 url: >-
   https://github.com/home-assistant/addons/tree/master/openthread_border_router
 arch:
